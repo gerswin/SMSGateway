@@ -7,5 +7,10 @@
     <string name="gateway">Start</string>
     <string name="mainswi">Start Server</string>
     <string name="logo">Parawebs Logo</string>
+    <string name="tex_url">Url Callback</string>
+    <string name="set_settings">Set</string>
+    <string name="port_label">Port</string>
+    <string name="port_input">5000</string>
+    <string name="cancel">Cancel</string>
 
 </resources>

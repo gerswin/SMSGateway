@@ -25,26 +25,32 @@ public class SMSLibrary {
 
         final PendingIntent deliveredPI = PendingIntent.getBroadcast(context, 0, new Intent(DELIVERED), 0);
 
-        //---when the SMS has been sent---
+            //---when the SMS has been sent---
         Intent intent = context.registerReceiver(new BroadcastReceiver() {
 
             @Override
             public void onReceive(Context arg0, Intent arg1) {
+                smsgateway  pt = new  smsgateway();
                 switch (getResultCode()) {
                     case Activity.RESULT_OK:
                         Log.w("LOG", "SMS send");
+                        pt.poster("send","SMS send",idm);
                         break;
                     case SmsManager.RESULT_ERROR_GENERIC_FAILURE:
                         Log.w("LOG", "Generic failure");
+                        pt.poster("fail","Generic failure",idm);
                         break;
                     case SmsManager.RESULT_ERROR_NO_SERVICE:
                         Log.w("LOG", "No service");
+                        pt.poster("fail","No service",idm);
                         break;
                     case SmsManager.RESULT_ERROR_NULL_PDU:
                         Log.w("LOG", "Null PDU");
+                        pt.poster("fail","Null PDU",idm);
                         break;
                     case SmsManager.RESULT_ERROR_RADIO_OFF:
                         Log.w("LOG", "Radio off");
+                        pt.poster("fail","Radio off",idm);
                         break;
                 }
             }

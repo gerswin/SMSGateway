@@ -2,6 +2,8 @@ package com.parawebs.smsgateway;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -18,7 +20,11 @@ import com.koushikdutta.async.http.server.AsyncHttpServer;
 import com.koushikdutta.async.http.server.AsyncHttpServerRequest;
 import com.koushikdutta.async.http.server.AsyncHttpServerResponse;
 import com.koushikdutta.async.http.server.HttpServerRequestCallback;
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.loopj.android.http.RequestParams;
 
+import org.apache.http.Header;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -32,15 +38,59 @@ public class smsgateway extends Activity {
     public String text;
     public String number;
     public String ts;
+    private SharedPreferences prefs;
+    private int port;
 
 
+
+    public void poster(String status,String idm,String detail)
+    {
+
+        RequestParams params = new RequestParams();
+        params.put("status", status);
+        params.put("detail",detail);
+        params.put("id",idm);
+        AsyncHttpClient client = new AsyncHttpClient();
+        client.post("http://requestb.in/tj20vwtj", params, new AsyncHttpResponseHandler() {
+
+            @Override
+            public void onStart() {
+                // called before request is started
+            }
+
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+                String str =new String(responseBody);
+                Log.w("LOG", str);
+                // called when response HTTP status is "200 OK"
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, byte[] errorResponse, Throwable e) {
+                // called when response HTTP status is "4XX" (eg. 401, 403, 404)
+            }
+
+            @Override
+            public void onRetry(int retryNo) {
+                // called when request is retried
+            }
+        });
+
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_smsgateway);
         switch_server = (Switch) findViewById(R.id.switch_server);
         server = null;
-
+        prefs = this.getSharedPreferences("com.parawebs.smsgateway",Context.MODE_PRIVATE);
+        if (prefs.getInt("port",0) == 0) {
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putInt("port", 18080);
+            editor.commit();
+            port = 18080;
+        }
+        Log.i("PORTINFO",String.valueOf(prefs.getInt("port",0)));
         switch_server.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView,
                                          boolean isChecked) {
@@ -95,8 +145,8 @@ public class smsgateway extends Activity {
                                 response.send("test!!!");
                             }
                         });
-
-                        server.listen(5000);
+                        Log.i("ERROR",String.valueOf(port));
+                        server.listen(port);
                     } else {
                         AsyncServer.getDefault().stop();
                         Log.i("LOG", "Server stopped!");
@@ -130,12 +180,10 @@ public class smsgateway extends Activity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            return true;
+        switch (item.getItemId()) {
+            case R.id.item_setting:
+                startActivity(new Intent(this, SettingsView.class));
+                break;
         }
         return super.onOptionsItemSelected(item);
     }
