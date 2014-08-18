@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">SMS Gateway</string>
+    <string name="hello_world">Parawebs SMS Gateway</string>
+    <string name="action_settings">Settings</string>
+    <string name="gateway">Start</string>
+    <string name="mainswi">Start Server</string>
+    <string name="logo">Parawebs Logo</string>
+
+</resources>
