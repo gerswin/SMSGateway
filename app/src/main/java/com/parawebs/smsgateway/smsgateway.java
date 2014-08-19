@@ -33,25 +33,32 @@ import java.util.List;
 
 
 public class smsgateway extends Activity {
-    private Switch switch_server;
-    private AsyncHttpServer server;
+    public static final String PREFS_NAME = "com.parawebs.smsgateway";
     public String text;
     public String number;
     public String ts;
+    private Switch switch_server;
+    private AsyncHttpServer server;
     private SharedPreferences prefs;
     private int port;
 
-
-
-    public void poster(String status,String idm,String detail)
-    {
-
+    public void poster(String status, String idm, String detail) {
+        String url;
+        SharedPreferences settings = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        SharedPreferences.Editor editor = settings.edit();
+        if (settings.getString("url_callback", "0") == "0") {
+            editor.putString("port", "http://requestb.in/tj20vwtj");
+            editor.commit();
+            url = "http://requestb.in/tj20vwtj";
+        } else {
+            url = settings.getString("url_callback", "0");
+        }
         RequestParams params = new RequestParams();
         params.put("status", status);
-        params.put("detail",detail);
-        params.put("id",idm);
+        params.put("detail", detail);
+        params.put("id", idm);
         AsyncHttpClient client = new AsyncHttpClient();
-        client.post("http://requestb.in/tj20vwtj", params, new AsyncHttpResponseHandler() {
+        client.post(url, params, new AsyncHttpResponseHandler() {
 
             @Override
             public void onStart() {
@@ -60,7 +67,7 @@ public class smsgateway extends Activity {
 
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
-                String str =new String(responseBody);
+                String str = new String(responseBody);
                 Log.w("LOG", str);
                 // called when response HTTP status is "200 OK"
             }
@@ -77,25 +84,29 @@ public class smsgateway extends Activity {
         });
 
     }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_smsgateway);
         switch_server = (Switch) findViewById(R.id.switch_server);
-        server = null;
-        prefs = this.getSharedPreferences("com.parawebs.smsgateway",Context.MODE_PRIVATE);
-        if (prefs.getInt("port",0) == 0) {
-            SharedPreferences.Editor editor = prefs.edit();
-            editor.putInt("port", 18080);
-            editor.commit();
-            port = 18080;
-        }
-        Log.i("PORTINFO",String.valueOf(prefs.getInt("port",0)));
+
+
         switch_server.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView,
                                          boolean isChecked) {
                 if (checkNetworkState()) {
                     if (isChecked) {
+                        server = null;
+                        SharedPreferences settings = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+                        SharedPreferences.Editor editor = settings.edit();
+                        if (settings.getInt("port", 0) == 0) {
+                            editor.putInt("port", 18080);
+                            editor.commit();
+                            port = 18080;
+                        } else {
+                            port = settings.getInt("port", 0);
+                        }
                         Log.i("LOG", "Starting server ...");
                         AsyncHttpServer server = new AsyncHttpServer();
 
@@ -114,8 +125,8 @@ public class smsgateway extends Activity {
                                     Log.i("BD", number);
                                     Long tsLong = System.currentTimeMillis() / 1000;
                                     ts = tsLong.toString();
-                                    com.parawebs.smsgateway.SMSLibrary sms= new  com.parawebs.smsgateway.SMSLibrary();
-                                    sms.sendSMS(getApplicationContext(),number,text,ts);
+                                    com.parawebs.smsgateway.SMSLibrary sms = new com.parawebs.smsgateway.SMSLibrary();
+                                    sms.sendSMS(getApplicationContext(), number, text, ts);
                                     try {
                                         json.put("status", "accepted");
                                         json.put("id", ts);
@@ -145,7 +156,7 @@ public class smsgateway extends Activity {
                                 response.send("test!!!");
                             }
                         });
-                        Log.i("ERROR",String.valueOf(port));
+                        Log.i("LOG","Current port: " + String.valueOf(port));
                         server.listen(port);
                     } else {
                         AsyncServer.getDefault().stop();
