@@ -12,5 +12,11 @@
     <string name="port_label">Port</string>
     <string name="port_input">5000</string>
     <string name="cancel">Cancel</string>
+    <string name="count">0</string>
+    <string name="label_count">Sended messages:</string>
+    <string name="failes_label">Failed:</string>
+    <string name="fail_count">0</string>
+    <string name="url_dest">Server Offline</string>
+    <string name="dest_label">Current Url:</string>
 
 </resources>

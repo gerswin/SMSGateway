@@ -12,6 +12,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.CompoundButton;
 import android.widget.Switch;
+import android.widget.TextView;
 
 import com.koushikdutta.async.AsyncServer;
 import com.koushikdutta.async.http.WebSocket;
@@ -28,7 +29,11 @@ import org.apache.http.Header;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 
 
@@ -41,18 +46,43 @@ public class smsgateway extends Activity {
     private AsyncHttpServer server;
     private SharedPreferences prefs;
     private int port;
+    private String ipAddress;
+    private static TextView textView_send;
+    private static TextView textView_fail;
+
+    private void getLocalIpAddress() {
+        try {
+            for (Enumeration<NetworkInterface> en = NetworkInterface
+                    .getNetworkInterfaces(); en.hasMoreElements(); ) {
+                NetworkInterface intf = en.nextElement();
+                if (intf.getName().contentEquals("wlan0")) {
+                    for (Enumeration<InetAddress> enumIpAddr = intf
+                            .getInetAddresses(); enumIpAddr.hasMoreElements(); ) {
+                        InetAddress inetAddress = enumIpAddr.nextElement();
+                        if (!inetAddress.isLoopbackAddress()) {
+                            ipAddress = inetAddress.getHostAddress().toString();
+                        }
+                    }
+                }
+            }
+        } catch (SocketException ex) {
+            System.out.println(ex.toString());
+        }
+    }
+
 
     public void poster(String status, String idm, String detail) {
-        String url;
-        SharedPreferences settings = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        SharedPreferences.Editor editor = settings.edit();
-        if (settings.getString("url_callback", "0") == "0") {
-            editor.putString("port", "http://requestb.in/tj20vwtj");
-            editor.commit();
-            url = "http://requestb.in/tj20vwtj";
-        } else {
-            url = settings.getString("url_callback", "0");
-        }
+        String url = "http://requestb.in/tj20vwtj";
+//        SharedPreferences settings = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+//        SharedPreferences.Editor editor = settings.edit();
+//        if (settings.getString("url_callback", "0") == "0") {
+//            editor.putString("port", "http://requestb.in/tj20vwtj");
+//            editor.commit();
+//            url = "http://requestb.in/tj20vwtj";
+//        } else {
+//            url = settings.getString("url_callback", "http://requestb.in/tj20vwtj");
+//        }
+        Log.i("URL", url);
         RequestParams params = new RequestParams();
         params.put("status", status);
         params.put("detail", detail);
@@ -84,19 +114,54 @@ public class smsgateway extends Activity {
         });
 
     }
+    public void send_count(int status)
+    {
+//        DatabaseHandler db = new DatabaseHandler(getApplicationContext());
 
+        // TextView textView_send = (TextView) findViewById(R.id.send_count);
+        // TextView textView_fail = (TextView) findViewById(R.id.fail_count);
+
+//        int send = db.getCounter(1).getCount();
+//        int fail = db.getCounter(2).getCount();
+
+        switch (status) {
+            case 1:
+                int send = Integer.parseInt(textView_send.getText().toString()) + 1;
+                textView_send.setText(String.valueOf(send));
+                break;
+            case 2:
+                int fail = Integer.parseInt(textView_fail.getText().toString()) + 1;
+                textView_send.setText(String.valueOf(fail));
+                break;
+        }
+
+
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_smsgateway);
         switch_server = (Switch) findViewById(R.id.switch_server);
+        textView_send = (TextView) findViewById(R.id.send_count);
+        textView_fail = (TextView) findViewById(R.id.fail_count);
 
+        DatabaseHandler db = new DatabaseHandler(this);
+
+        if (db.getCounter(1).getCount() == 0) {
+            db.createCounters(1, "send");
+            db.createCounters(1, "fail");
+
+        } else {
+            Log.i("LOG", "ya existia...");
+        }
 
         switch_server.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView,
                                          boolean isChecked) {
+                TextView url_current = (TextView) findViewById(R.id.url_dest);
                 if (checkNetworkState()) {
                     if (isChecked) {
+                        getLocalIpAddress();
                         server = null;
                         SharedPreferences settings = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
                         SharedPreferences.Editor editor = settings.edit();
@@ -107,6 +172,7 @@ public class smsgateway extends Activity {
                         } else {
                             port = settings.getInt("port", 0);
                         }
+                        url_current.setText("http://" + ipAddress + ":" + String.valueOf(port));
                         Log.i("LOG", "Starting server ...");
                         AsyncHttpServer server = new AsyncHttpServer();
 
@@ -153,14 +219,15 @@ public class smsgateway extends Activity {
                         server.get("/test", new HttpServerRequestCallback() {
                             @Override
                             public void onRequest(AsyncHttpServerRequest request, AsyncHttpServerResponse response) {
-                                response.send("test!!!");
+                                response.send("Runing!!!");
                             }
                         });
-                        Log.i("LOG","Current port: " + String.valueOf(port));
+                        Log.i("LOG", "Current port: " + String.valueOf(port));
                         server.listen(port);
                     } else {
                         AsyncServer.getDefault().stop();
                         Log.i("LOG", "Server stopped!");
+                        url_current.setText("Server Offline");
                     }
                 } else {
                     switch_server.toggle();

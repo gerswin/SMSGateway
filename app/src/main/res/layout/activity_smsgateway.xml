@@ -19,4 +19,65 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true" />
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="@string/count"
+        android:id="@+id/send_count"
+        android:textSize="110sp"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="@string/label_count"
+        android:id="@+id/textView"
+        android:textSize="25sp"
+        android:layout_above="@+id/send_count"
+        android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="@string/failes_label"
+        android:id="@+id/failes_label"
+        android:layout_below="@+id/send_count"
+        android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="@string/fail_count"
+        android:id="@+id/fail_count"
+        android:layout_below="@+id/failes_label"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="12dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/url_dest"
+        android:id="@+id/url_dest"
+        android:textSize="16sp"
+        android:layout_toRightOf="@+id/dest_label"
+        android:layout_toEndOf="@+id/dest_label"
+        android:layout_marginLeft="24dp"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="@string/dest_label"
+        android:id="@+id/dest_label"
+        android:layout_alignBottom="@+id/url_dest"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+
 </RelativeLayout>
